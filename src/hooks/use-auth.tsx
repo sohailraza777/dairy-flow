@@ -26,7 +26,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("🛠 AUTH DEBUG: Initializing Firebase listener...");
+    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("🛠 AUTH DEBUG: Firebase response received. User:", firebaseUser ? firebaseUser.email : "No active session.");
+      
       setUser(firebaseUser);
       
       if (firebaseUser) {
@@ -34,13 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           if (userDoc.exists()) {
             setRole(userDoc.data().role || "user");
+            console.log("🛠 AUTH DEBUG: Role loaded from Firestore:", userDoc.data().role);
           }
         } catch (e) {
-          console.error("Error fetching user role:", e);
+          console.error("🛠 AUTH DEBUG: Error fetching user role from Firestore:", e);
         }
       }
       
       setLoading(false);
+      console.log("🛠 AUTH DEBUG: Loading state set to FALSE. App should render now.");
     });
 
     return unsubscribe;
@@ -110,7 +116,6 @@ export function useAuth() {
   return context;
 }
 
-// Updated to catch the exact Firebase error message!
 export function friendlyAuthError(error: any): string {
   const code = error?.code || "unknown";
   const map: Record<string, string> = {
@@ -124,6 +129,5 @@ export function friendlyAuthError(error: any): string {
     "auth/invalid-login-credentials": "Invalid email or password.", 
   };
   
-  // If we don't know the error, spit out the exact Firebase code so we can debug it!
   return map[code] ?? `Firebase Error: ${code} - ${error?.message || "Unknown error"}`;
 }
