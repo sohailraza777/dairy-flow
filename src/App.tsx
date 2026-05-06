@@ -2,7 +2,7 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth"; // Added useAuth import
 import { ProtectedRoute } from "@/components/protected-route";
 import Dashboard from "@/pages/dashboard";
 import CommandCenter from "@/pages/command-center";
@@ -35,38 +35,41 @@ function ProtectedApp() {
 }
 
 function Router() {
-  return (
-    <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/signup" component={Signup} />
-      <Route component={ProtectedApp} />
-    </Switch>
-  );
+  const { user, loading } = useAuth();
+
+  // 1. If Firebase is still initializing, wait.
+  if (loading) return null;
+
+  // 2. If NO user is logged in, force show Auth pages
+  if (!user) {
+    return (
+      <Switch>
+        <Route path="/signup" component={Signup} />
+        {/* Any other route will just show the Login page directly */}
+        <Route component={Login} />
+      </Switch>
+    );
+  }
+
+  // 3. If user is logged in, show the Dashboard
+  return <ProtectedApp />;
 }
 
 function App() {
   return (
     <TooltipProvider>
-      {/* --- DEBUG MESSAGE START --- */}
+      {/* Keeping a small banner to confirm React is alive */}
       <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        background: 'yellow', 
-        color: 'black', 
-        textAlign: 'center', 
-        padding: '10px', 
-        zIndex: 9999,
-        fontWeight: 'bold',
-        borderBottom: '2px solid black'
+        position: 'fixed', top: 0, left: 0, width: '100%', 
+        background: 'yellow', color: 'black', textAlign: 'center', 
+        padding: '5px', zIndex: 9999, fontWeight: 'bold', fontSize: '12px'
       }}>
-        DEBUG: The Dashboard App is Mounted (React is working!)
+        REACT STATUS: ACTIVE
       </div>
-      {/* --- DEBUG MESSAGE END --- */}
 
       <AuthProvider>
-        <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, "") || ""}>
+        {/* Simplified Router - No complex base path logic */}
+        <WouterRouter>
           <Router />
         </WouterRouter>
         <Toaster />
