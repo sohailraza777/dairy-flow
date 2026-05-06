@@ -45,9 +45,26 @@ function Router() {
 }
 
 function App() {
-  // We removed QueryClientProvider from here because it's now in main.tsx
   return (
     <TooltipProvider>
+      {/* --- DEBUG MESSAGE START --- */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        background: 'yellow', 
+        color: 'black', 
+        textAlign: 'center', 
+        padding: '10px', 
+        zIndex: 9999,
+        fontWeight: 'bold',
+        borderBottom: '2px solid black'
+      }}>
+        DEBUG: The Dashboard App is Mounted (React is working!)
+      </div>
+      {/* --- DEBUG MESSAGE END --- */}
+
       <AuthProvider>
         <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, "") || ""}>
           <Router />
